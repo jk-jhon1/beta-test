@@ -1,25 +1,77 @@
-// Variáveis de estado do jogo
 let estadoJogo = "MENU"; 
-
-// Variáveis para as imagens
 let imgMenu, imgPersonagem, imgCenarioSala, imgCenarioPantano;
 
-// Objeto do Tonhão (Personagem Principal)
-let jogador = {
-  x: 100, 
-  y: 300, 
-  largura: 60, 
-  altura: 60,
-  velX: 0, 
-  velY: 0, 
-  velocidade: 5, 
-  forcaPulo: -12, 
-  gravidade: 0.6,
-  noChao: false
-};
+// Classe do Personagem Principal (Otimização)
+class Jogador {
+  constructor() {
+    this.largura = 60;
+    this.altura = 60;
+    this.x = 100;
+    this.y = 300;
+    this.velX = 0;
+    this.velY = 0;
+    this.velocidade = 6;
+    this.forcaPulo = -14; // Pulo mais firme
+    this.gravidade = 0.8;
+    this.noChao = false;
+  }
+
+  atualizar() {
+    // Aplica a gravidade constantemente
+    this.velY += this.gravidade;
+    this.y += this.velY;
+    this.x += this.velX;
+
+    // Define onde fica o "chão" da imagem
+    let nivelDoChao = height - 90;
+
+    // Sistema de Colisão com o chão
+    if (this.y + this.altura >= nivelDoChao) {
+      this.y = nivelDoChao - this.altura;
+      this.velY = 0;
+      this.noChao = true;
+    } else {
+      this.noChao = false;
+    }
+
+    // Limites da tela (Impede que o Tonhão saia do mapa)
+    if (this.x < 0) this.x = 0;
+    if (this.x + this.largura > width) this.x = width - this.largura;
+  }
+
+  mover() {
+    // Seta Esquerda ou Tecla 'A'
+    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) { 
+      this.velX = -this.velocidade;
+    } 
+    // Seta Direita ou Tecla 'D'
+    else if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) { 
+      this.velX = this.velocidade;
+    } 
+    // Ficar parado
+    else {
+      this.velX = 0;
+    }
+  }
+
+  pular() {
+    // Só permite pular se estiver encostado no chão
+    if (this.noChao) {
+      this.velY = this.forcaPulo;
+      this.noChao = false;
+    }
+  }
+
+  desenhar() {
+    image(imgPersonagem, this.x, this.y, this.largura, this.altura);
+  }
+}
+
+let tonhao; // Variável que vai guardar o nosso jogador
 
 // Carrega as imagens antes do jogo iniciar
 function preload() {
+  // ATENÇÃO: Os nomes devem estar idênticos aos arquivos no seu computador/GitHub
   imgMenu = loadImage('Gemini_Generated_Image_uwyfimuwyfimuwyf.jpg');
   imgPersonagem = loadImage('indio.png');
   imgCenarioSala = loadImage('primeira,sala.png');
@@ -27,8 +79,8 @@ function preload() {
 }
 
 function setup() {
-  // Cria uma tela com as proporções da imagem do menu
   createCanvas(800, 600);
+  tonhao = new Jogador(); // Cria o Tonhão
 }
 
 function draw() {
@@ -40,74 +92,46 @@ function draw() {
 }
 
 function desenharMenu() {
-  // Desenha a imagem do menu de fundo
   image(imgMenu, 0, 0, width, height);
-  
-  // Como os botões já estão desenhados na imagem, 
-  // a lógica de clique será baseada nas coordenadas do mouse (veja mousePressed abaixo)
 }
 
 function desenharJogo() {
-  // Desenha o cenário (usando o pântano como exemplo)
+  // Desenha o fundo
   image(imgCenarioPantano, 0, 0, width, height);
 
-  // --- FÍSICA E MOVIMENTAÇÃO ---
-  jogador.velY += jogador.gravidade; // Aplica gravidade
-  jogador.y += jogador.velY;
-  jogador.x += jogador.velX;
+  // Executa os comandos do Tonhão
+  tonhao.mover();
+  tonhao.atualizar();
+  tonhao.desenhar();
 
-  // Colisão simples com o "chão" da tela
-  let nivelDoChao = height - 100;
-  if (jogador.y + jogador.altura >= nivelDoChao) {
-    jogador.y = nivelDoChao - jogador.altura;
-    jogador.velY = 0;
-    jogador.noChao = true;
-  } else {
-    jogador.noChao = false;
-  }
-
-  // Controles de Esquerda/Direita (Setas ou A/D)
-  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
-    jogador.velX = -jogador.velocidade;
-  } else if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-    jogador.velX = jogador.velocidade;
-  } else {
-    jogador.velX = 0; // Para de andar se soltar o botão
-  }
-
-  // Desenha o personagem na tela
-  image(imgPersonagem, jogador.x, jogador.y, jogador.largura, jogador.altura);
-
-  // Instruções na tela
-  fill(255);
+  // Texto de instruções na tela
+  fill(255); // Cor branca
   textSize(16);
-  text("A/D ou Setas: Mover | ESPAÇO: Pular | E: Interagir", 20, 30);
+  text("A/D ou Setas: Mover | W ou ESPAÇO: Pular | E: Interagir", 20, 30);
 }
 
-// Verifica cliques do mouse (Para os botões do Menu)
+// Controle do Mouse (Para o Menu)
 function mousePressed() {
   if (estadoJogo === "MENU") {
-    // Coordenadas aproximadas do botão "START" na sua imagem
-    // Se o mouse estiver dentro dessa área quadrada e clicar, o jogo inicia
+    // Coordenadas invisíveis do botão "START" gerado na imagem
     if (mouseX > 310 && mouseX < 490 && mouseY > 400 && mouseY < 460) {
       estadoJogo = "JOGANDO";
     }
   }
 }
 
-// Verifica teclas pressionadas (Para Pular e Interagir)
+// Controle do Teclado (Para ações que não são segurar o botão, como pular e interagir)
 function keyPressed() {
   if (estadoJogo === "JOGANDO") {
-    
-    // PULAR: Tecla Espaço (32), Seta pra Cima ou W (87)
-    if ((keyCode === UP_ARROW || keyCode === 32 || keyCode === 87) && jogador.noChao) {
-      jogador.velY = jogador.forcaPulo;
+    // PULAR: Seta pra cima, Espaço (32) ou 'W' (87)
+    if (keyCode === UP_ARROW || keyCode === 32 || keyCode === 87) {
+      tonhao.pular();
     }
     
-    // INTERAGIR: Tecla E (69)
+    // INTERAGIR: Tecla 'E' (69)
     if (keyCode === 69) {
-      console.log("O Tonhão interagiu com o ambiente!");
-      // Aqui você pode colocar a lógica para abrir portas, ler placas, etc.
+      console.log("Interação ativada!");
+      // Futuramente colocaremos a lógica para trocar de cenário aqui
     }
   }
 }
