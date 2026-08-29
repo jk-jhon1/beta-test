@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beta Zere Tonhão</title>
-  <!-- Importa a biblioteca p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
   <style>
     body {
@@ -14,15 +13,16 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #222; /* Fundo escuro em volta do jogo */
+      background-color: #111;
+      overflow: hidden; /* Remove barras de rolagem */
     }
     canvas {
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      image-rendering: pixelated; /* Mantém a pixel art nítida */
     }
   </style>
 </head>
 <body>
-  <!-- O script do seu jogo -->
   <script src="sketch.js"></script>
 </body>
 </html>
