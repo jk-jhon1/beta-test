@@ -1,118 +1,129 @@
-* {
+/* ============================================
+   RESTUDING v0.8 - Estilos Completos
+   ============================================ */
+
+/* Reset base */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 html, body {
+  width: 100%;
   height: 100%;
-  background: #0d0d1a;
   overflow: hidden;
-  font-family: 'Courier New', monospace;
+  background-color: #0a0a14;
+  font-family: 'Courier New', Courier, monospace;
   touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  -webkit-touch-callout: none;
   -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  display: flex;
-  flex-direction: column;
-}
-
-/* ============ GAME AREA ============ */
+/* Área do jogo */
 #gameArea {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #000;
   position: relative;
 }
 
 #gameCanvas {
+  display: block;
   max-width: 100%;
   max-height: 100%;
-  image-rendering: auto;
-  background: #000;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
-/* ============ MOBILE CONTROLS ============ */
-#mCtrl {
+/* Controles Mobile */
+#mobileControls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 140px;
-  flex-shrink: 0;
-  z-index: 500;
-  display: none;
+  background: linear-gradient(to top, #12122a, rgba(18,18,42,0.95));
+  border-top: 2px solid #2a2a4a;
+  display: none; /* JavaScript mostra se for mobile */
   justify-content: space-between;
   align-items: center;
-  padding: 10px 18px;
-  background: #12122a;
-  border-top: 2px solid #2a2a4a;
+  padding: 10px 20px;
+  z-index: 9999;
 }
 
-.dpad { display: flex; gap: 14px; }
+.controlLeft, .controlRight {
+  display: flex;
+  gap: 12px;
+}
 
-.dbtn, .abtn {
-  border: 3px solid rgba(255, 255, 255, 0.4);
-  font-family: 'Courier New', monospace;
+.controlRight {
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Botões D-Pad */
+.btnPad {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 24px;
   font-weight: bold;
-  color: #fff;
+  font-family: inherit;
   cursor: pointer;
-  transition: transform 0.08s, filter 0.08s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-.dbtn {
-  width: 74px; height: 74px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  font-size: 26px;
+.btnPad:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.3);
 }
 
-.acts { display: flex; flex-direction: column; gap: 10px; }
-
-.abtn {
-  width: 110px; height: 56px; border-radius: 14px;
-  font-size: 15px;
-}
-
-#btnJump { background: rgba(60, 130, 255, 0.75); }
-#btnInteract { background: rgba(240, 200, 40, 0.85); color: #222; }
-
-.dbtn:active, .abtn:active {
-  filter: brightness(1.5);
-  transform: scale(0.92);
-}
-
-/* ============ AUDIO CONTROL ============ */
-#audioCtrl {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-}
-
-.mute-btn {
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.6);
-  font-size: 20px;
+/* Botões de Ação */
+.btnAction {
+  width: 120px;
+  height: 50px;
+  border-radius: 12px;
+  border: 3px solid rgba(255,255,255,0.4);
+  background: rgba(240,200,40,0.85);
+  color: #222;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-.mute-btn:active { transform: scale(0.9); }
-.mute-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
-/* ============ RESPONSIVE ============ */
-@media (max-width: 768px) {
-  .dbtn { width: 64px; height: 64px; font-size: 22px; }
-  .abtn { width: 95px; height: 48px; font-size: 13px; }
-  #mCtrl { height: 120px; }
+.btnAction:active {
+  transform: scale(0.95);
 }
 
-@media (max-width: 480px) {
-  .dbtn { width: 56px; height: 56px; font-size: 20px; }
-  .abtn { width: 85px; height: 44px; font-size: 12px; }
-  #mCtrl { height: 110px; padding: 8px 12px; }
+/* Responsivo */
+@media (max-height: 600px) {
+  #mobileControls { height: 110px; }
+  .btnPad { width: 60px; height: 60px; font-size: 20px; }
+  .btnAction { width: 100px; height: 42px; font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+  .btnPad { width: 54px; height: 54px; }
+  .btnAction { width: 90px; height: 38px; font-size: 11px; }
 }
