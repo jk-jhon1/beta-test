@@ -1,9 +1,3 @@
-// ============ SISTEMA DE ÁUDIO (Web Audio API) ============
-// Música procedural gerada em tempo real — sem arquivos externos!
-//
-// ⚠️ v0.6 tinha um bug: usava "const Audio = ..." que conflita com
-// o construtor nativo window.Audio(). Corrigido para "SoundSys".
-
 const SoundSys = (() => {
   let ctx = null;
   let bgmGain = null;
