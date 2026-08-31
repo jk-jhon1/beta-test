@@ -50,7 +50,7 @@ button{font:inherit}
   box-shadow:inset 0 2px 0 rgba(255,255,255,.14),0 4px 0 rgba(0,0,0,.3);
   color:rgba(255,255,255,0.75);font-size:28px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'PixelFont',monospace;font-weight:bold;
+  font-family:'PixelFont',monospace;font-weight:bold;padding:0;cursor:pointer;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   transition:background 0.05s;
 }
@@ -93,12 +93,12 @@ button{font:inherit}
 </div>
 <div id="mCtrl">
   <div class="dpad">
-    <div class="dbtn" id="btnLeft">◀</div>
-    <div class="dbtn" id="btnRight">▶</div>
+    <button class="dbtn" id="btnLeft" type="button" aria-label="Andar para a esquerda">◀</button>
+    <button class="dbtn" id="btnRight" type="button" aria-label="Andar para a direita">▶</button>
   </div>
   <div class="acts">
-    <div class="abtn" id="btnInteract">INTERAGIR</div>
-    <div class="abtn" id="btnJump">PULAR</div>
+    <button class="abtn" id="btnInteract" type="button" aria-label="Interagir">INTERAGIR</button>
+    <button class="abtn" id="btnJump" type="button" aria-label="Pular">PULAR</button>
   </div>
 </div>
 
@@ -167,10 +167,12 @@ let GW = 480, GH = 270;
 
 function resize() {
   const area = document.getElementById('gameArea');
-  const aw = area.clientWidth, ah = area.clientHeight;
-  const s = Math.min(aw / GW, ah / GH);
-  C.style.width = Math.floor(GW * s) + 'px';
-  C.style.height = Math.floor(GH * s) + 'px';
+  if (!area || !GW || !GH) return;
+  const aw = Math.max(1, area.clientWidth);
+  const ah = Math.max(1, area.clientHeight);
+  const s = Math.max(0.1, Math.min(aw / GW, ah / GH));
+  C.style.width = Math.max(1, Math.floor(GW * s)) + 'px';
+  C.style.height = Math.max(1, Math.floor(GH * s)) + 'px';
 }
 addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 300));
@@ -180,10 +182,19 @@ addEventListener('orientationchange', () => setTimeout(resize, 300));
 // ============================================================
 const SP = {};
 let loaded = 0;
+const REQUIRED_ASSETS = 13;
 function ld(n, s) {
   const i = new Image();
-  i.onload = () => { SP[n] = i; loaded++; };
-  i.onerror = () => { loaded++; };
+  let settled = false;
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    if (i.naturalWidth > 0 && i.naturalHeight > 0) SP[n] = i;
+    loaded++;
+  };
+  i.decoding = 'async';
+  i.onload = finish;
+  i.onerror = finish;
   // Use embedded base64 image if available, otherwise fallback to file path
   i.src = EMBEDDED_IMAGES[s] || s;
 }
@@ -222,6 +233,11 @@ addEventListener('keydown', e => {
   if (!K[e.code]) JP[e.code] = true; K[e.code] = true; e.preventDefault();
 });
 addEventListener('keyup', e => { K[e.code] = false; e.preventDefault(); });
+addEventListener('blur', () => {
+  Object.keys(K).forEach(k => { K[k] = false; });
+  mob.left = mob.right = mob.jump = mob.interact = false;
+  mobJP.jump = mobJP.interact = false;
+});
 
 // Mobile buttons
 const mob = { left: false, right: false, jump: false, interact: false };
@@ -230,23 +246,35 @@ const mobJP = { jump: false, interact: false };
 function bindBtn(elId, type) {
   const el = document.getElementById(elId);
   if (!el) return;
-  const on = e => {
+  const press = e => {
     e.preventDefault(); e.stopPropagation();
+    if (e.pointerId !== undefined && el.setPointerCapture) {
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    }
     el.classList.add('active');
     mob[type] = true;
     if (type === 'jump' || type === 'interact') mobJP[type] = true;
   };
-  const off = e => {
-    e.preventDefault(); e.stopPropagation();
+  const release = e => {
+    if (e && e.cancelable) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
     el.classList.remove('active');
     mob[type] = false;
   };
-  el.addEventListener('touchstart', on, { passive: false });
-  el.addEventListener('touchend', off, { passive: false });
-  el.addEventListener('touchcancel', off, { passive: false });
-  el.addEventListener('mousedown', on);
-  el.addEventListener('mouseup', off);
-  el.addEventListener('mouseleave', off);
+  if ('PointerEvent' in window) {
+    el.addEventListener('pointerdown', press, { passive: false });
+    el.addEventListener('pointerup', release, { passive: false });
+    el.addEventListener('pointercancel', release, { passive: false });
+    el.addEventListener('lostpointercapture', release);
+  } else {
+    el.addEventListener('touchstart', press, { passive: false });
+    el.addEventListener('touchend', release, { passive: false });
+    el.addEventListener('touchcancel', release, { passive: false });
+    el.addEventListener('mousedown', press);
+    el.addEventListener('mouseup', release);
+    el.addEventListener('mouseleave', release);
+  }
+  window.addEventListener('blur', release);
 }
 bindBtn('btnLeft', 'left');
 bindBtn('btnRight', 'right');
@@ -374,16 +402,12 @@ function positionCharacters() {
 function enterScene(nextScene, entrySide = 'left') {
   scene = nextScene;
   transitionFlash = 22;
+  // Rebuild every scene-specific object before placing the player at the entrance.
+  // Without this reset, returning to the classroom left Felca and ENSINAR at x=-100.
+  positionCharacters();
   P.x = entrySide === 'right' ? WALL_R - P.w - 8 : WALL_L + 8;
   P.y = GROUND_Y - P.h;
   P.vx = 0; P.vy = 0;
-  if (scene === 'hall') {
-    desk.x = Math.max(42, GW * 0.12);
-    desk.y = GROUND_Y - desk.h;
-  } else {
-    desk.x = -100;
-    desk.y = GROUND_Y - desk.h;
-  }
   beep(nextScene === 'hall' ? 620 : nextScene === 'lobby' ? 700 : 520, .12, 'sine', .03);
 }
 
@@ -564,6 +588,8 @@ function drawTVDialogue() {
   if (scene !== 'classroom' || endingTriggered) return;
 
   const tv = tvArea;
+  if (tv.w <= 0 || tv.h <= 0 || !speechLines.length) return;
+  const safeSpeechIdx = Math.min(Math.max(speechIdx, 0), speechLines.length - 1);
 
   // Semi-transparent overlay over the green board to make text readable.
   // The panel is intentionally translucent so the supplied scenario remains visible.
@@ -575,18 +601,19 @@ function drawTVDialogue() {
   X.lineWidth = 1;
   X.strokeRect(tv.x + 1, tv.y + 1, tv.w - 2, tv.h - 2);
 
-  // Font size — calculated FIRST so it can be used everywhere
-  const fontSize = Math.max(11, Math.floor(tv.w / 8));
+  // Keep the slide readable on the supplied board and on smaller fallback canvases.
+  // The old tv.w / 8 formula produced a 26px font inside a 95px-high board.
+  const fontSize = Math.min(12, Math.max(8, Math.floor(Math.min(tv.w / 16, tv.h / 6))));
 
   // Slide number indicator (top-right corner)
   X.fillStyle = 'rgba(255,255,255,0.5)';
   X.font = `bold ${Math.max(7, fontSize - 4)}px PixelFont`;
   X.textAlign = 'right';
-  X.fillText(`${speechIdx + 1}/${speechLines.length}`, tv.x + tv.w - 6, tv.y + 12);
+  X.fillText(`${safeSpeechIdx + 1}/${speechLines.length}`, tv.x + tv.w - 6, tv.y + 12);
   X.textAlign = 'left';
 
   // Current text
-  const text = speechLines[speechIdx].substring(0, speechChar);
+  const text = String(speechLines[safeSpeechIdx] || '').substring(0, Math.max(0, speechChar));
 
   // Set font for main text
   X.font = `bold ${fontSize}px PixelFont`;
@@ -797,9 +824,10 @@ function updatePlayer() {
 }
 
 function updateSpeech() {
-  if (endingTriggered || speechDone) return;
+  if (endingTriggered || speechDone || !speechLines.length) return;
+  speechIdx = Math.min(Math.max(speechIdx, 0), speechLines.length - 1);
   speechTimer++;
-  const cur = speechLines[speechIdx];
+  const cur = speechLines[speechIdx] || '';
   if (speechChar < cur.length) {
     if (speechTimer % 3 === 0) speechChar++;
   } else {
@@ -807,6 +835,7 @@ function updateSpeech() {
       speechIdx++; speechChar = 0; speechTimer = 0;
       if (speechIdx >= speechLines.length) {
         speechIdx = speechLines.length - 1;
+        speechChar = speechLines[speechIdx].length;
         speechDone = true;
       }
     }
@@ -917,7 +946,7 @@ function resetClassroom() {
 
 function updateTitle() {
   if (menuMode === 'final3') {
-    if (K.KeyM || K.Enter || K.Space) { menuMode = 'menu'; final3Unlocked = false; beep(330, .05, 'square', .018); }
+    if (JP.KeyM || JP.KeyE || JP.Enter || JP.Space) { menuMode = 'menu'; final3Unlocked = false; beep(330, .05, 'square', .018); }
     return;
   }
   if (menuMode === 'settings') {
@@ -1050,6 +1079,8 @@ function updateTeaching() {
     // After the presentation, M selects Final 3; E/Enter/Space selects Final 1.
     if (JP.KeyM) {
       final3Unlocked = true;
+      K.KeyM = false;
+      JP.KeyM = false;
       endingType = 'felcaTroll';
       menuMode = 'final3';
       state = 'title';
@@ -1243,7 +1274,7 @@ function loop() {
 }
 
 function waitLoad() {
-  if (loaded >= 13) {
+  if (loaded >= REQUIRED_ASSETS) {
     calcRoomLayout();
     positionCharacters();
     resize();
@@ -1260,5 +1291,5 @@ waitLoad();
 
 // Game is fully standalone - no service worker needed
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3289f5c1e72f5ce',t:'MTc4Nzk3NTc1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
