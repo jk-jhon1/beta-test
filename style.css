@@ -1,0 +1,119 @@
+/* ============ RESET & BASE ============ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background: #0d0d1a;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============ GAME AREA ============ */
+#gameArea {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+#gameCanvas {
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: auto;
+  background: #000;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+/* ============ MOBILE CONTROLS ============ */
+#mCtrl {
+  height: 140px;
+  flex-shrink: 0;
+  z-index: 500;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+  background: #12122a;
+  border-top: 2px solid #2a2a4a;
+}
+
+.dpad { display: flex; gap: 14px; }
+
+.dbtn, .abtn {
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.08s, filter 0.08s;
+}
+
+.dbtn {
+  width: 74px; height: 74px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 26px;
+}
+
+.acts { display: flex; flex-direction: column; gap: 10px; }
+
+.abtn {
+  width: 110px; height: 56px; border-radius: 14px;
+  font-size: 15px;
+}
+
+#btnJump { background: rgba(60, 130, 255, 0.75); }
+#btnInteract { background: rgba(240, 200, 40, 0.85); color: #222; }
+
+.dbtn:active, .abtn:active {
+  filter: brightness(1.5);
+  transform: scale(0.92);
+}
+
+/* ============ AUDIO CONTROL ============ */
+#audioCtrl {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+.mute-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  color: #fff;
+}
+
+.mute-btn:active { transform: scale(0.9); }
+.mute-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .dbtn { width: 64px; height: 64px; font-size: 22px; }
+  .abtn { width: 95px; height: 48px; font-size: 13px; }
+  #mCtrl { height: 120px; }
+}
+
+@media (max-width: 480px) {
+  .dbtn { width: 56px; height: 56px; font-size: 20px; }
+  .abtn { width: 85px; height: 44px; font-size: 12px; }
+  #mCtrl { height: 110px; padding: 8px 12px; }
+}
