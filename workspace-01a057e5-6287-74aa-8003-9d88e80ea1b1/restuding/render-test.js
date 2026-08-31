@@ -124,7 +124,7 @@ function saveBMP(path) {
 }
 
 // ---------- ctx stub com render ----------
-const UP = '/home/user/uploads/';
+const UP = require('path').join(__dirname, '..', 'uploads') + '/';
 const realImgs = {
   t: decodePNG(UP + '1788138912130.png'),
   s: decodePNG(UP + '1788138546835.png'),
