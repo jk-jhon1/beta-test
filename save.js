@@ -1,6 +1,3 @@
-// ============ SISTEMA DE SAVE (localStorage) ============
-// Persiste: finais desbloqueados, preferência de mute, melhor tempo
-
 const SaveSystem = (() => {
   const KEY = 'restuding_save_v1';
 
