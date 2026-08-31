@@ -1,12 +1,3 @@
-// ============ RENDER.JS ============
-// Todas as funções de desenho + efeitos visuais (shake, poeira, squash)
-// Depende de variáveis globais definidas em game.js (GW, GH, C, X, P, item,
-// stu, tvArea, particles, fr, state, speechLines, speechIdx, speechChar,
-// speechDone, teachTimer, endChar, ignoreTimer, IGNORE_THRESHOLD, isMob,
-// GROUND_Y). Por serem "let/const" no escopo global do documento, essas
-// funções só são CHAMADAS depois que game.js já as inicializou.
-
-// ============ SCREEN SHAKE ============
 let shakeAmt = 0;
 
 function triggerShake(amount) {
