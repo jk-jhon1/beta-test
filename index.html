@@ -2,27 +2,35 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beta Zere Tonhão</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #111;
-      overflow: hidden; /* Remove barras de rolagem */
-    }
-    canvas {
-      box-shadow: 0 0 20px rgba(0,0,0,0.8);
-      image-rendering: pixelated; /* Mantém a pixel art nítida */
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>RESTUDING - Beta v0.7</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <script src="sketch.js"></script>
+  <div id="gameArea">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+  <div id="mCtrl">
+    <div class="dpad">
+      <button class="dbtn" id="btnLeft">◀</button>
+      <button class="dbtn" id="btnRight">▶</button>
+    </div>
+    <div class="acts">
+      <button class="abtn" id="btnInteract">INTERAGIR</button>
+      <button class="abtn" id="btnJump">PULAR</button>
+    </div>
+  </div>
+  <div id="audioCtrl">
+    <button id="btnMute" class="mute-btn">🔊</button>
+  </div>
+
+  <!-- Ordem importa: save → audio → render → game -->
+  <script src="js/save.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
